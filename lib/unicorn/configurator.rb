@@ -41,6 +41,7 @@ class Unicorn::Configurator
     :before_exec => lambda { |server|
         server.logger.info("forked child re-executing...")
       },
+    :before_murder => nil,
     :pid => nil,
     :preload_app => false,
     :check_client_connection => false,
@@ -166,6 +167,14 @@ class Unicorn::Configurator
   # There is no corresponding after_exec hook (for obvious reasons).
   def before_exec(*args, &block)
     set_hook(:before_exec, block_given? ? block : args[0], 1)
+  end
+
+  # Sets the before_murder hook to a gien Proc object. This Proc object
+  # will be called by the master process before killing a lazy worker
+  # with SIGKILL, the point of this callback is NOT to prevent killing
+  # but to provide an instrumentation hook
+  def before_murder(*args, &block)
+    set_hook(:before_murder, block_given? ? block : args[0], 1)
   end
 
   # sets the timeout of worker processes to +seconds+.  Workers
