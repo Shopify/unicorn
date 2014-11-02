@@ -169,12 +169,27 @@ class Unicorn::Configurator
     set_hook(:before_exec, block_given? ? block : args[0], 1)
   end
 
-  # Sets the before_murder hook to a gien Proc object. This Proc object
+  # Sets the before_murder hook to a given Proc object. This Proc object
   # will be called by the master process before killing a lazy worker
   # with SIGKILL, the point of this callback is NOT to prevent killing
   # but to provide an instrumentation hook
   def before_murder(*args, &block)
-    set_hook(:before_murder, block_given? ? block : args[0], 1)
+    set_hook_arg = if block_given?
+      # This hook is meant a an instrumentation point, it should not prevent the
+      # worker from getting killed exception will be logged and move on
+      new_block = Proc.new do |server, worker, wpid|
+        begin
+          block.call(server, worker, wpid)
+        rescue StandardError => e
+          server.logger.error("Error executing before murder for PID: #{wpid} error: #{e.inspect}")
+          server.logger.error(e.backtrace.join("\n"))
+        end
+      end
+    else
+      args[0]
+    end
+
+    set_hook(:before_murder, set_hook_arg, 3)
   end
 
   # sets the timeout of worker processes to +seconds+.  Workers

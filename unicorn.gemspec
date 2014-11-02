@@ -14,7 +14,7 @@ end.compact
 
 Gem::Specification.new do |s|
   s.name = %q{unicorn-camilo}
-  s.version = "4.8.2.5.16"
+  s.version = "4.8.2.5.19"
   s.authors = ["#{name} hackers"]
   s.summary = summary
   s.description = readme_description

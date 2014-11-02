@@ -476,7 +476,7 @@ class Unicorn::HttpServer
       next_sleep = 0
       logger.error "worker=#{worker.nr} PID:#{wpid} timeout " \
                    "(#{diff}s > #{@timeout}s), killing"
-      before_murder.call(wpid) if before_murder
+      before_murder.call(self, worker, wpid) if before_murder
       kill_worker(:KILL, wpid) # take no prisoners for timeout violations
     end
     next_sleep <= 0 ? 1 : next_sleep
