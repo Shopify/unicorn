@@ -1,4 +1,5 @@
 # -*- encoding: binary -*-
+require 'set'
 
 # This is the process manager of Unicorn. This manages worker
 # processes which in turn handle the I/O and application process.
@@ -89,6 +90,7 @@ class Unicorn::HttpServer
     @self_pipe = []
     @workers = {} # hash maps PIDs to Workers
     @sig_queue = [] # signal queue used for self-piping
+    @before_murder_called = Set.new() # ensures before_murder is called only once
 
     # we try inheriting listeners first, so we bind them later.
     # we don't write the pid file until we've bound listeners in case
@@ -395,6 +397,7 @@ class Unicorn::HttpServer
         self.pid = pid.chomp('.oldbin') if pid
         proc_name 'master'
       else
+        @before_murder_called.delete(wpid)
         worker = @workers.delete(wpid) and worker.close rescue nil
         m = "reaped #{status.inspect} worker=#{worker.nr rescue 'unknown'}"
         status.success? ? logger.info(m) : logger.error(m)
@@ -476,7 +479,10 @@ class Unicorn::HttpServer
       next_sleep = 0
       logger.error "worker=#{worker.nr} PID:#{wpid} timeout " \
                    "(#{diff}s > #{@timeout}s), killing"
-      before_murder.call(self, worker, wpid) if before_murder
+      if before_murder and not @before_murder_called.include?(wpid)
+        before_murder.call(self, worker, wpid)
+        @before_murder_called.add(wpid) # This ensures we call before_murder only once
+      end
       kill_worker(:KILL, wpid) # take no prisoners for timeout violations
     end
     next_sleep <= 0 ? 1 : next_sleep
@@ -689,6 +695,7 @@ class Unicorn::HttpServer
   def kill_worker(signal, wpid)
     Process.kill(signal, wpid)
   rescue Errno::ESRCH
+    @before_murder_called.delete(wpid)
     worker = @workers.delete(wpid) and worker.close rescue nil
   end
 
