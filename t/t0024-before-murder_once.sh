@@ -1,6 +1,6 @@
 #!/bin/sh
 . ./test-lib.sh
-t_plan 5 "before murder is called"
+t_plan 5 "before murder is called only once"
 
 t_begin "setup and start" && {
 	unicorn_setup

@@ -479,7 +479,7 @@ class Unicorn::HttpServer
       next_sleep = 0
       logger.error "worker=#{worker.nr} PID:#{wpid} timeout " \
                    "(#{diff}s > #{@timeout}s), killing"
-      if before_murder and not @before_murder_called.include?(wpid)
+      if before_murder && !@before_murder_called.include?(wpid)
         before_murder.call(self, worker, wpid)
         @before_murder_called.add(wpid) # This ensures we call before_murder only once
       end
