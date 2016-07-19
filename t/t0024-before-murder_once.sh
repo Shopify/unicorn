@@ -8,16 +8,12 @@ t_begin "setup and start" && {
 timeout 5
 after_fork { |s,w| File.open('$fifo','w') { |f| f.write '.' } }
 class Unicorn::HttpServer
+  alias_method :kill_worker_always, :kill_worker
   def kill_worker(signal, wpid)
     @iteration ||= 0
     \$stderr.puts "kill_worker #{signal} #{wpid} #{@iteration}"
-    if @iteration > 0 then
-      Process.kill(signal, wpid)
-    end
-    @iteration = @iteration + 1
-  rescue Errno::ESRCH
-    @before_murder_called.delete(wpid)
-    worker = @workers.delete(wpid) and worker.close rescue nil
+    kill_worker_always(signal, wpid) if @iteration > 0
+    @iteration += 1
   end
 end
 before_murder do |s, w, p| 

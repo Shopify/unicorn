@@ -90,7 +90,7 @@ class Unicorn::HttpServer
     @self_pipe = []
     @workers = {} # hash maps PIDs to Workers
     @sig_queue = [] # signal queue used for self-piping
-    @before_murder_called = Set.new() # ensures before_murder is called only once
+    @before_murder_called = Set.new # ensures before_murder is called only once
 
     # we try inheriting listeners first, so we bind them later.
     # we don't write the pid file until we've bound listeners in case
@@ -479,10 +479,8 @@ class Unicorn::HttpServer
       next_sleep = 0
       logger.error "worker=#{worker.nr} PID:#{wpid} timeout " \
                    "(#{diff}s > #{@timeout}s), killing"
-      if before_murder && !@before_murder_called.include?(wpid)
-        before_murder.call(self, worker, wpid)
-        @before_murder_called.add(wpid) # This ensures we call before_murder only once
-      end
+      # Ensure we call before_murder only once
+      before_murder.call(self, worker, wpid) if before_murder and @before_murder_called.add?(wpid)
       kill_worker(:KILL, wpid) # take no prisoners for timeout violations
     end
     next_sleep <= 0 ? 1 : next_sleep
