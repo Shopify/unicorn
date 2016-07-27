@@ -13,7 +13,7 @@ test_files = manifest.grep(%r{\Atest/unit/test_.*\.rb\z}).map do |f|
 end.compact
 
 Gem::Specification.new do |s|
-  s.name = %q{unicorn-camilo}
+  s.name = %q{unicorn-shopify}
   s.version = "4.8.2.5.23"
   s.authors = ["#{name} hackers"]
   s.summary = summary
