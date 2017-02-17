@@ -528,9 +528,10 @@ class Unicorn::HttpServer
   # assuming we haven't closed the socket, but don't get hung up
   # if the socket is already closed or broken.  We'll always ensure
   # the socket is closed at the end of this function
-  def handle_error(client, e)
-    code = case e
+  def handle_error(client, exception, env)
+    code = case exception
     when EOFError,Errno::ECONNRESET,Errno::EPIPE,Errno::ENOTCONN
+      Unicorn.log_error(@logger, "client disconnected", exception)
       # client disconnected on us and there's nothing we can do
     when Unicorn::RequestURITooLongError
       414
@@ -539,7 +540,7 @@ class Unicorn::HttpServer
     when Unicorn::HttpParserError # try to tell the client they're bad
       400
     else
-      Unicorn.log_error(@logger, "app error", e)
+      Unicorn.log_error(@logger, "app error", exception)
       500
     end
     if code
@@ -578,8 +579,8 @@ class Unicorn::HttpServer
       client.shutdown # in case of fork() in Rack app
       client.close # flush and uncork socket immediately, no keepalive
     end
-  rescue => e
-    handle_error(client, e)
+  rescue => exception
+    handle_error(client, exception, env)
   end
 
   EXIT_SIGS = [ :QUIT, :TERM, :INT ]

@@ -14,7 +14,7 @@ end.compact
 
 Gem::Specification.new do |s|
   s.name = %q{unicorn-shopify}
-  s.version = "4.8.2.5.23"
+  s.version = "4.8.2.5.25"
   s.authors = ["#{name} hackers"]
   s.summary = summary
   s.description = readme_description
