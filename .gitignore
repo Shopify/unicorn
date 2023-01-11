@@ -10,8 +10,6 @@
 /local.mk
 /test/rbx-*
 /test/ruby-*
-ext/unicorn_http/Makefile
-ext/unicorn_http/unicorn_http.c
 log/
 pkg/
 /vendor
@@ -21,5 +19,4 @@ pkg/
 /man
 /tmp
 /LATEST
-/lib/unicorn/version.rb
 /*_1
