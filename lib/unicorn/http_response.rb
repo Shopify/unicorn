@@ -40,6 +40,9 @@ module Unicorn::HttpResponse
           # key in Rack < 1.5
           hijack = value
         else
+          # By Rack specs header values MUST be strings, but we try to
+          # be resilient to mis-behaving applications.
+          value = value.to_s
           if value =~ /\n/
             # avoiding blank, key-only cookies with /\n+/
             value.split(/\n+/).each { |v| buf << "#{key}: #{v}\r\n" }
