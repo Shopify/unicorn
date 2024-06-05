@@ -40,7 +40,9 @@ module Unicorn::HttpResponse
           # key in Rack < 1.5
           hijack = value
         else
-          if value =~ /\n/
+          if value.kind_of?(Array)
+            value.first.split(/\n+/).each { |v| buf << "#{key}: #{v}\r\n" }
+          elsif value =~ /\n/
             # avoiding blank, key-only cookies with /\n+/
             value.split(/\n+/).each { |v| buf << "#{key}: #{v}\r\n" }
           else
